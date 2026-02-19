@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add marked.js for markdown formatting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -40,12 +42,13 @@
 
         /* Sidebar */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background: linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
             border-right: 1px solid rgba(0, 0, 0, 0.05);
             padding: 24px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
 
         .logo {
@@ -160,10 +163,12 @@
 
         .upload-status {
             margin-top: 12px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             font-size: 13px;
             display: none;
+            white-space: pre-line;
+            line-height: 1.5;
         }
 
         .upload-status.success {
@@ -180,12 +185,18 @@
             border: 1px solid #fc8181;
         }
 
+        .upload-status.warning {
+            display: block;
+            background: #feebc8;
+            color: #7b341e;
+            border: 1px solid #fbd38d;
+        }
+
         .doc-info {
             background: white;
             border-radius: 20px;
             padding: 16px;
             border: 1px solid rgba(102, 126, 234, 0.1);
-            flex: 1;
         }
 
         .doc-info-title {
@@ -206,7 +217,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             background: #f8faff;
             margin-bottom: 8px;
@@ -220,6 +231,65 @@
 
         .doc-item .fa-file-pdf {
             color: #f56565;
+        }
+
+        .doc-badge {
+            background: #48bb78;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Classification Details */
+        .classification-details {
+            margin-top: 16px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 12px;
+        }
+
+        .classification-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #667eea);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .category-tag {
+            background: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
         }
 
         /* Main Chat Area */
@@ -274,7 +344,7 @@
         .message {
             display: flex;
             gap: 12px;
-            max-width: 80%;
+            max-width: 85%;
             animation: fadeIn 0.3s ease;
         }
 
@@ -311,12 +381,80 @@
 
         .message-content {
             background: white;
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-radius: 18px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.7;
             color: #2d3748;
+            overflow-wrap: break-word;
+        }
+
+        /* Markdown Styling for Better Formatting */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 0.5em 0 0.25em 0;
+            font-weight: 600;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content p {
+            margin: 0.5em 0;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+        .message-content li {
+            margin: 0.2em 0;
+        }
+
+        .message-content code {
+            background: #f1f1f1;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .message-content pre {
+            background: #f1f1f1;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 0.5em 0;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 1em;
+            margin: 0.5em 0;
+            color: #4a5568;
+        }
+
+        .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0.5em 0;
+        }
+
+        .message-content th, .message-content td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .message-content th {
+            background: #f7fafc;
         }
 
         .message.user .message-content {
@@ -330,8 +468,8 @@
         }
 
         .message-sources {
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px dashed #e2e8f0;
             font-size: 12px;
             color: #a0aec0;
@@ -464,11 +602,11 @@
             
             .sidebar {
                 width: 100%;
-                height: auto;
+                max-height: 40vh;
             }
             
             .message {
-                max-width: 90%;
+                max-width: 95%;
             }
         }
     </style>
@@ -490,7 +628,7 @@
             <div class="upload-section">
                 <div class="upload-title">
                     <i class="fas fa-cloud-upload-alt" style="color: #667eea;"></i>
-                    <span>Upload Document</span>
+                    <span>Upload Retail Document</span>
                 </div>
                 <div class="upload-area" onclick="document.getElementById('fileInput').click()">
                     <i class="fas fa-file-pdf"></i>
@@ -508,14 +646,25 @@
             <div class="doc-info">
                 <div class="doc-info-title">
                     <i class="fas fa-file-alt" style="color: #667eea;"></i>
-                    <span>Active Documents</span>
+                    <span>Active Document</span>
                 </div>
                 <ul class="doc-list" id="docList">
                     <li class="doc-item">
                         <i class="fas fa-file-pdf"></i>
-                        <span>No documents uploaded</span>
+                        <span>No document uploaded</span>
                     </li>
                 </ul>
+                <div id="classificationInfo" style="display: none;" class="classification-details">
+                    <div class="classification-title">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Document Analysis</span>
+                    </div>
+                    <div id="confidenceScore"></div>
+                    <div class="confidence-bar">
+                        <div id="confidenceFill" class="confidence-fill" style="width: 0%"></div>
+                    </div>
+                    <div id="retailCategories" class="category-tags"></div>
+                </div>
             </div>
         </div>
 
@@ -524,11 +673,11 @@
             <div class="chat-header">
                 <h2>
                     <i class="fas fa-comments"></i>
-                    Chat with your documents
+                    Chat with your retail documents
                 </h2>
                 <div class="model-badge">
                     <i class="fas fa-bolt"></i>
-                    Gemini 3 Flash
+                    Gemini 3 Flash • Retail-Only
                 </div>
             </div>
 
@@ -538,18 +687,25 @@
                         <i class="fas fa-robot"></i>
                     </div>
                     <div class="message-content">
-                        👋 Hi! I'm your retail document assistant. Upload a PDF and ask me anything about it!
-                        <div class="message-sources">
-                            <i class="fas fa-info-circle"></i>
-                            I'll only answer from your documents
-                        </div>
+                        👋 Hi! I'm your **retail document assistant**. 
+                        
+                        I can only answer questions based on retail documents you upload.
+                        
+                        **Please upload:**
+                        • Retail policies & procedures
+                        • Inventory reports
+                        • Pricing guides
+                        • Store operations manuals
+                        • Sales reports
+                        
+                        I will automatically reject non-retail documents (resumes, medical files, recipes, etc.)
                     </div>
                 </div>
             </div>
 
             <div class="chat-input-area">
                 <div class="input-container">
-                    <input type="text" id="question" placeholder="Ask a question about your document..." onkeypress="handleKeyPress(event)">
+                    <input type="text" id="question" placeholder="Ask a retail-related question..." onkeypress="handleKeyPress(event)">
                     <button class="send-btn" onclick="sendQuestion()" id="sendBtn">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -560,10 +716,15 @@
 
     <script>
         let uploadedFileName = '';
+        let uploadStats = null;
         const chatBox = document.getElementById('chatBox');
         const sendBtn = document.getElementById('sendBtn');
         const questionInput = document.getElementById('question');
         const docList = document.getElementById('docList');
+        const classificationInfo = document.getElementById('classificationInfo');
+        const confidenceFill = document.getElementById('confidenceFill');
+        const confidenceScore = document.getElementById('confidenceScore');
+        const retailCategories = document.getElementById('retailCategories');
 
         async function uploadFile() {
             const fileInput = document.getElementById('fileInput');
@@ -586,7 +747,7 @@
             }
 
             // Show uploading state
-            showStatus('Uploading and processing...', 'success');
+            showStatus('🔄 Analyzing document...', 'warning');
             
             const formData = new FormData();
             formData.append('file', file);
@@ -603,19 +764,54 @@
                     showStatus('✅ ' + data.message, 'success');
                     uploadedFileName = file.name;
                     
+                    // Store classification stats if available
+                    if (data.retail_classification) {
+                        uploadStats = data.retail_classification;
+                        displayClassificationInfo(uploadStats);
+                    }
+                    
                     // Update document list
                     updateDocList(uploadedFileName);
                     
                     // Add system message
-                    addMessage('bot', `📄 Document "${file.name}" has been processed successfully. You can now ask questions about it!`);
+                    addMessage('bot', `📄 **Document processed successfully!**\n\nFile: **${file.name}**\nConfidence: **${data.retail_classification?.confidence || 'High'}**\n\nYou can now ask questions about this retail document.`);
                     
                     // Clear file input
                     fileInput.value = '';
                 } else {
+                    // Handle rejection with detailed error message
                     showStatus('❌ ' + data.detail, 'error');
+                    
+                    // Add rejection message to chat
+                    addMessage('bot', `❌ **Document Rejected**\n\n${data.detail}`);
+                    
+                    // Clear any previous document
+                    uploadedFileName = '';
+                    updateDocList(null);
+                    classificationInfo.style.display = 'none';
                 }
             } catch (error) {
                 showStatus('❌ Upload failed: ' + error.message, 'error');
+            }
+        }
+
+        function displayClassificationInfo(stats) {
+            if (!stats) return;
+            
+            classificationInfo.style.display = 'block';
+            
+            // Update confidence bar
+            const confidence = stats.confidence || 85;
+            confidenceFill.style.width = confidence + '%';
+            confidenceScore.innerHTML = `Retail Confidence: <strong>${confidence}%</strong>`;
+            
+            // Update categories
+            if (stats.categories_detected && stats.categories_detected.length > 0) {
+                let categoriesHtml = '';
+                stats.categories_detected.forEach(category => {
+                    categoriesHtml += `<span class="category-tag">${category}</span>`;
+                });
+                retailCategories.innerHTML = categoriesHtml;
             }
         }
 
@@ -626,13 +822,22 @@
         }
 
         function updateDocList(filename) {
-            docList.innerHTML = `
-                <li class="doc-item">
-                    <i class="fas fa-file-pdf" style="color: #f56565;"></i>
-                    <span style="flex: 1;">${filename}</span>
-                    <i class="fas fa-check-circle" style="color: #48bb78;"></i>
-                </li>
-            `;
+            if (filename) {
+                docList.innerHTML = `
+                    <li class="doc-item">
+                        <i class="fas fa-file-pdf" style="color: #f56565;"></i>
+                        <span style="flex: 1;">${filename}</span>
+                        <span class="doc-badge">Active</span>
+                    </li>
+                `;
+            } else {
+                docList.innerHTML = `
+                    <li class="doc-item">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>No document uploaded</span>
+                    </li>
+                `;
+            }
         }
 
         function addMessage(sender, text, sources = []) {
@@ -651,12 +856,15 @@
 
             const avatar = sender === 'user' ? 'fa-user' : 'fa-robot';
             
+            // Format the text with markdown for better readability
+            const formattedText = marked.parse(text);
+            
             messageDiv.innerHTML = `
                 <div class="message-avatar">
                     <i class="fas ${avatar}"></i>
                 </div>
                 <div class="message-content">
-                    ${text}
+                    ${formattedText}
                     ${sourcesHtml}
                 </div>
             `;
@@ -696,7 +904,7 @@
             if (!question) return;
             
             if (!uploadedFileName) {
-                addMessage('bot', '⚠️ Please upload a PDF document first before asking questions.');
+                addMessage('bot', '⚠️ **Please upload a retail document first** before asking questions.');
                 return;
             }
 
@@ -727,11 +935,11 @@
                 if (res.ok) {
                     addMessage('bot', data.answer, data.sources);
                 } else {
-                    addMessage('bot', '❌ Error: ' + data.detail);
+                    addMessage('bot', '❌ **Error:** ' + data.detail);
                 }
             } catch (error) {
                 removeTypingIndicator();
-                addMessage('bot', '❌ Failed to get response: ' + error.message);
+                addMessage('bot', '❌ **Failed to get response:** ' + error.message);
             } finally {
                 sendBtn.disabled = false;
                 questionInput.focus();

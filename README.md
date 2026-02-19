@@ -17,7 +17,7 @@ A powerful **Retrieval-Augmented Generation (RAG)** system for retail document i
 
 ##  Architecture
 
-![Architecture Diagram](https://via.placeholder.com/800x400?text=Architecture+Diagram)
+https://github.com/harSHITags/Retail-RAG-Chatbot/blob/main/RetailBot%20-HLD%20Document.pdf
 
 ## Tech Stack
 
@@ -41,5 +41,6 @@ A powerful **Retrieval-Augmented Generation (RAG)** system for retail document i
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/harSHITags/retail-rag-chatbot.git
-   cd retail-rag-chatbot
+   git clone https://github.com/harSHITags/Retail-RAG-Chatbot
+   cd Retail-Chatbot
+   
