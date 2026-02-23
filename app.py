@@ -4,6 +4,7 @@ import traceback
 import re
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from dotenv import load_dotenv
 
 # LangChain imports
@@ -29,7 +30,12 @@ else:
 
 app = FastAPI(title="Retail RAG Chatbot - Balanced Retail Assistant")
 
-# Serve static frontend files
+# Serve the frontend at root
+@app.get("/")
+async def serve_frontend():
+    return FileResponse("static/index.html")
+
+# Serve static assets (JS, CSS, images)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Create necessary folders
