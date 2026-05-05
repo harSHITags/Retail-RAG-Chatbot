@@ -5,12 +5,14 @@ import re
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
+from research_agent import RetailResearchAgent
 from dotenv import load_dotenv
 
 # LangChain imports
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import ChatGoogleGenerativeAI
 
@@ -475,6 +477,56 @@ Answer:"""
         print(f"❌ Chat error: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+
+class ResearchRequest(BaseModel):
+    query: str
+
+@app.post("/api/research")
+async def research_endpoint(request: ResearchRequest):
+    print(f"\n🔍 Research Query: '{request.query}'")
+    try:
+        agent = RetailResearchAgent()
+        result = agent.run_research(request.query)
+        return result
+    except Exception as e:
+        print(f"❌ Research error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Research failed: {str(e)}")
+
+@app.get("/api/research/history")
+async def get_research_history():
+    history_dir = os.path.join("knowledge_repository", "research_findings")
+    if not os.path.exists(history_dir):
+        return {"history": []}
+    
+    files = []
+    for f in os.listdir(history_dir):
+        if f.endswith(".md"):
+            path = os.path.join(history_dir, f)
+            stats = os.stat(path)
+            files.append({
+                "filename": f,
+                "timestamp": stats.st_mtime,
+                "size": stats.st_size
+            })
+    # Sort by timestamp descending
+    files.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"history": files}
+
+@app.get("/api/research/history/{filename}")
+async def get_research_report(filename: str):
+    # Security check to prevent path traversal
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+        
+    path = os.path.join("knowledge_repository", "research_findings", filename)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Report not found")
+        
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+        
+    return {"filename": filename, "content": content}
 
 @app.get("/health")
 async def health_check():

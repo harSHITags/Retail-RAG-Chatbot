@@ -10,6 +10,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({startOnLoad:false, theme:'base', themeVariables:{primaryColor:'#e8f4f8', primaryTextColor:'#22271e', primaryBorderColor:'#1a6b8a', lineColor:'#1a6b8a', fontFamily:'DM Sans'}});
+  </script>
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,6 +39,10 @@
       --sh-md: 0 6px 24px rgba(0,0,0,.11);
       --sh-lg: 0 18px 52px rgba(0,0,0,.18);
       --ease: all .22s cubic-bezier(.4,0,.2,1);
+      /* Research accent */
+      --research:    #1a6b8a;
+      --research-lt: #e8f4f8;
+      --research-dk: #155a75;
     }
 
     html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); overflow: hidden; }
@@ -49,14 +57,30 @@
       display: flex; flex-direction: column; height: 100%; overflow: hidden;
       position: relative; z-index: 50;
       transition: transform .3s cubic-bezier(.4,0,.2,1);
+      --logo-bg: var(--gold);
+      --logo-text: var(--gold);
+      --logo-primary: var(--green-xd);
+      --logo-accent: var(--gold);
+    }
+    .sidebar.research-mode {
+      --logo-bg: #7dd3ef;
+      --logo-text: #7dd3ef;
+      --logo-primary: var(--research-dk);
+      --logo-accent: #7dd3ef;
     }
     .sidebar::before {
-      content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+      content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
       background-image: radial-gradient(circle, rgba(255,255,255,.055) 1px, transparent 1px);
       background-size: 22px 22px;
     }
+    .sidebar::after {
+      content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+      background: linear-gradient(175deg, #0b2b3a 0%, var(--research-dk) 55%, var(--research) 100%);
+      opacity: 0; transition: opacity .4s ease;
+    }
+    .sidebar.research-mode::after { opacity: 1; }
     .sidebar-inner {
-      position:relative; z-index:1; display:flex; flex-direction:column;
+      position:relative; z-index:2; display:flex; flex-direction:column;
       height:100%; overflow-y:auto; overflow-x:hidden; padding:22px 18px 26px;
       scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.12) transparent;
     }
@@ -67,18 +91,41 @@
     .logo { display:flex; align-items:center; gap:13px; padding-bottom:22px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:20px; }
     .logo-mark {
       width:54px; height:54px; flex-shrink:0;
-      background: var(--gold);
+      background: var(--logo-bg);
       border-radius:18px;
       display:flex; align-items:center; justify-content:center;
       box-shadow: 0 6px 22px rgba(0,0,0,.28), 0 0 0 2px rgba(255,255,255,.12), inset 0 1px 0 rgba(255,255,255,.35);
       animation:logoFloat 5s ease-in-out infinite;
       position:relative; overflow:hidden;
+      transition: background .4s ease;
     }
     .logo-mark::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.3) 0%,transparent 55%); border-radius:inherit; pointer-events:none; }
     @keyframes logoFloat { 0%,100%{transform:translateY(0) rotate(0);} 50%{transform:translateY(-5px) rotate(1.5deg);} }
     .logo-mark svg { width:32px; height:32px; position:relative; z-index:1; }
-    .logo-text h1 { font-family:'Playfair Display',serif; font-size:1.55rem; font-weight:700; color:var(--gold); line-height:1.1; letter-spacing:-.3px; }
+    .logo-mark svg * { transition: fill .4s ease, stroke .4s ease; }
+    .logo-text h1 { font-family:'Playfair Display',serif; font-size:1.55rem; font-weight:700; color:var(--logo-text); line-height:1.1; letter-spacing:-.3px; transition: color .4s ease; }
     .logo-text p  { font-size:.68rem; font-weight:500; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:1.1px; margin-top:4px; }
+
+    /* ── MODE TABS ── */
+    .mode-tabs { display:flex; gap:6px; margin-bottom:20px; background:rgba(255,255,255,.07); border-radius:14px; padding:5px; }
+    .mode-tab {
+      flex:1; padding:9px 6px; border:none; border-radius:10px; cursor:pointer;
+      font-family:'DM Sans',sans-serif; font-size:.75rem; font-weight:600;
+      color:rgba(255,255,255,.55); background:transparent;
+      display:flex; align-items:center; justify-content:center; gap:5px;
+      transition:var(--ease); white-space:nowrap;
+    }
+    .mode-tab:hover { color:rgba(255,255,255,.85); background:rgba(255,255,255,.08); }
+    .mode-tab.active-rag {
+      background: linear-gradient(135deg,var(--gold) 0%,var(--gold-dk) 100%);
+      color: var(--green-xd);
+      box-shadow: 0 3px 10px rgba(0,0,0,.25);
+    }
+    .mode-tab.active-research {
+      background: linear-gradient(135deg,#1a9dd9 0%,var(--research) 100%);
+      color: white;
+      box-shadow: 0 3px 10px rgba(0,0,0,.25);
+    }
 
     /* SECTION LABEL */
     .sec-label { display:flex; align-items:center; gap:7px; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:1.3px; color:rgba(255,255,255,.38); margin-bottom:10px; margin-top:4px; }
@@ -154,8 +201,24 @@
     .conf-fill { height:100%; background:linear-gradient(90deg,var(--gold-dk),var(--gold)); border-radius:3px; transition:width .7s ease; }
     .cat-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
     .cat-tag { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); color:rgba(255,255,255,.65); padding:3px 10px; border-radius:20px; font-size:.69rem; display:flex; align-items:center; gap:4px; transition:var(--ease); }
-    .cat-tag svg { width:10px; height:10px; }
     .cat-tag:hover { background:var(--gold); color:var(--green-xd); border-color:var(--gold); }
+
+    /* RESEARCH SIDEBAR PANEL */
+    .research-panel { display:none; background:rgba(26,107,138,.12); border:1px solid rgba(26,107,138,.3); border-radius:var(--r-lg); padding:16px 14px; margin-bottom:18px; animation:slideUp .3s; }
+    .research-panel.visible { display:block; }
+    .rp-title { font-size:.8rem; font-weight:700; color:#7dd3ef; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+    .rp-desc { font-size:.75rem; color:rgba(255,255,255,.5); line-height:1.55; }
+    .rp-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
+    .rp-tag { background:rgba(26,107,138,.25); border:1px solid rgba(26,107,138,.4); color:#7dd3ef; padding:3px 9px; border-radius:20px; font-size:.68rem; }
+
+    /* RESEARCH HISTORY PANEL */
+    .research-history-panel { display:none; flex-direction:column; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:var(--r-lg); padding:14px; margin-bottom:18px; animation:slideUp .3s; flex:1; min-height:150px; }
+    .research-history-panel.visible { display:flex; }
+    .rh-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; overflow-y:auto; flex:1; padding-right:4px; scrollbar-width:thin; }
+    .rh-item { background:rgba(26,107,138,.1); border:1px solid rgba(26,107,138,.25); padding:9px 12px; border-radius:10px; cursor:pointer; transition:var(--ease); display:flex; flex-direction:column; gap:4px; }
+    .rh-item:hover { background:rgba(26,107,138,.2); border-color:rgba(26,107,138,.5); transform:translateY(-1px); }
+    .rh-item-title { font-size:.78rem; font-weight:600; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rh-item-meta { font-size:.65rem; color:rgba(255,255,255,.5); display:flex; justify-content:space-between; }
 
     /* SIDEBAR FOOTER */
     .sf { margin-top:auto; padding-top:18px; border-top:1px solid rgba(255,255,255,.08); }
@@ -178,14 +241,23 @@
     .hamburger:hover { background:var(--green); color:white; border-color:var(--green); }
 
     .hdr-brand { display:flex; align-items:center; gap:10px; min-width:0; }
-    .hdr-brand-mark { width:38px; height:38px; background:var(--green); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:var(--sh-sm); }
+    .hdr-brand-mark { width:38px; height:38px; background:var(--green); border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:var(--sh-sm); transition:var(--ease); }
+    .hdr-brand-mark.research-mode { background:var(--research); }
     .hdr-brand-mark svg { width:22px; height:22px; }
     .hdr-brand-text h2 { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .hdr-brand-text p { font-size:.7rem; color:var(--muted); margin-top:1px; white-space:nowrap; }
 
+    /* MODE BADGE in header */
+    .mode-badge {
+      display:none; align-items:center; gap:5px;
+      padding:4px 10px; border-radius:20px; font-size:.69rem; font-weight:700;
+      letter-spacing:.4px; text-transform:uppercase; flex-shrink:0;
+    }
+    .mode-badge.rag-badge { display:flex; background:rgba(74,94,66,.1); color:var(--green); border:1px solid rgba(74,94,66,.2); }
+    .mode-badge.research-badge { display:flex; background:rgba(26,107,138,.12); color:var(--research); border:1px solid rgba(26,107,138,.25); }
+    .mode-badge i { font-size:.6rem; }
+
     .hdr-right { display:flex; align-items:center; gap:7px; flex-shrink:0; }
-
-
     .hdr-btn { background:var(--cream); border:1px solid var(--cream-dk); color:var(--muted); height:36px; padding:0 12px; border-radius:var(--r-sm); cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-size:.78rem; font-weight:500; transition:var(--ease); white-space:nowrap; font-family:'DM Sans',sans-serif; }
     .hdr-btn svg { width:14px; height:14px; }
     .hdr-btn:hover { border-color:#c0392b; color:#c0392b; background:rgba(192,57,43,.06); }
@@ -208,8 +280,10 @@
     .ws-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:18px; text-align:left; }
     .ws-card { background:white; border:1px solid var(--cream-dk); border-radius:12px; padding:11px 12px; cursor:pointer; display:flex; align-items:flex-start; gap:9px; transition:var(--ease); }
     .ws-card:hover { border-color:var(--green); transform:translateY(-2px); box-shadow:var(--sh-sm); }
+    .ws-card.research-card:hover { border-color:var(--research); }
     .ws-card-ico { width:28px; height:28px; border-radius:8px; background:var(--cream); flex-shrink:0; display:flex; align-items:center; justify-content:center; }
     .ws-card-ico svg { width:14px; height:14px; color:var(--green); }
+    .ws-card-ico.research-ico svg { color:var(--research); }
     .ws-card-text strong { font-size:.8rem; font-weight:600; color:var(--ink); display:block; }
     .ws-card-text span   { font-size:.72rem; color:var(--muted); }
 
@@ -220,19 +294,27 @@
     .message.bot  { align-self:flex-start; }
     .msg-av { width:36px; height:36px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:var(--sh-sm); }
     .message.user .msg-av { background:var(--green); }
+    .message.user.research-user .msg-av { background:var(--research); }
     .message.bot  .msg-av { background:white; border:1px solid var(--cream-dk); }
+    .message.research .msg-av { background:var(--research-lt); border-color:rgba(26,107,138,.25); }
     .msg-av svg { width:18px; height:18px; }
     .msg-body { display:flex; flex-direction:column; gap:4px; min-width:0; }
     .msg-content { padding:12px 16px; border-radius:20px; font-size:.92rem; line-height:1.66; word-break:break-word; transition:box-shadow .2s; }
     .message.user .msg-content { background:var(--green); color:white; border-radius:20px 4px 20px 20px; }
+    .message.user.research-user .msg-content { background:var(--research); }
     .message.bot  .msg-content { background:white; color:var(--ink); border:1px solid var(--cream-dk); border-radius:4px 20px 20px 20px; box-shadow:var(--sh-sm); }
-    .message.bot .msg-content:hover { box-shadow:var(--sh-md); }
+    .message.bot  .msg-content:hover { box-shadow:var(--sh-md); }
+    /* Research message special styling */
+    .message.research .msg-content { background:white; color:var(--ink); border:1px solid rgba(26,107,138,.2); border-radius:4px 20px 20px 20px; box-shadow:0 2px 10px rgba(26,107,138,.08); }
     .msg-content h1,.msg-content h2,.msg-content h3{margin:.5em 0 .25em;font-weight:600;}
+    .msg-content h2 { font-size:1rem; color:var(--ink); border-bottom:1px solid var(--cream-dk); padding-bottom:4px; }
     .msg-content p{margin:.35em 0;}
     .msg-content ul,.msg-content ol{margin:.35em 0 .35em 1.4em;}
     .msg-content li{margin:.2em 0;}
     .msg-content code{background:rgba(0,0,0,.07);padding:.15em .4em;border-radius:5px;font-size:.84em;}
     .msg-content pre{background:rgba(0,0,0,.04);padding:.8em;border-radius:10px;overflow-x:auto;margin:.4em 0;}
+    .msg-content a { color:var(--research); text-decoration:none; border-bottom:1px dotted var(--research); }
+    .msg-content a:hover { border-bottom-style:solid; }
     .message.user .msg-content code{background:rgba(255,255,255,.2);}
     .message.user .msg-content pre{background:rgba(255,255,255,.12);}
 
@@ -242,11 +324,23 @@
     .msg-time { font-size:.66rem; color:var(--stone); padding:0 6px; }
     .message.user .msg-time { text-align:right; }
 
+    /* Research footer */
+    .research-footer {
+      margin-top:6px; padding:7px 10px; background:var(--research-lt);
+      border:1px solid rgba(26,107,138,.18); border-radius:10px;
+      font-size:.72rem; color:var(--research); display:flex; align-items:center; gap:6px;
+      flex-wrap:wrap;
+    }
+    .research-footer i { font-size:.65rem; }
+    .research-footer a { color:var(--research); font-weight:600; text-decoration:none; }
+    .research-footer a:hover { text-decoration:underline; }
+
     .typing-indicator { display:flex; gap:5px; padding:14px 18px; background:white; border:1px solid var(--cream-dk); border-radius:4px 20px 20px 20px; width:fit-content; box-shadow:var(--sh-sm); }
     .typing-indicator span { width:7px; height:7px; background:var(--green-lt); border-radius:50%; animation:typeBounce 1.2s infinite; }
     .typing-indicator span:nth-child(2){animation-delay:.15s;}
     .typing-indicator span:nth-child(3){animation-delay:.3s;}
     @keyframes typeBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-7px);}}
+    .typing-indicator.research-typing span { background:var(--research); }
 
     /* INPUT AREA */
     .chat-input-wrap { background:white; border-top:1px solid var(--cream-dk); padding:12px 18px 16px; flex-shrink:0; }
@@ -255,9 +349,12 @@
     .q-chip { background:var(--cream); border:1px solid var(--cream-dk); color:var(--green); padding:6px 12px; border-radius:20px; font-size:.77rem; font-weight:500; cursor:pointer; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:5px; transition:var(--ease); font-family:'DM Sans',sans-serif; }
     .q-chip svg { width:11px; height:11px; }
     .q-chip:hover { background:var(--green); color:white; border-color:var(--green); }
+    .q-chip.research-chip { color:var(--research); border-color:rgba(26,107,138,.2); background:var(--research-lt); }
+    .q-chip.research-chip:hover { background:var(--research); color:white; border-color:var(--research); }
 
     .input-row { display:flex; align-items:flex-end; gap:7px; background:var(--cream); border:2px solid var(--cream-dk); border-radius:28px; padding:8px 8px 8px 16px; transition:var(--ease); }
     .input-row:focus-within { border-color:var(--green); background:white; box-shadow:0 0 0 3px rgba(74,94,66,.08); }
+    .input-row.research-input:focus-within { border-color:var(--research); box-shadow:0 0 0 3px rgba(26,107,138,.08); }
     #question { flex:1; border:none; background:transparent; font-family:'DM Sans',sans-serif; font-size:.94rem; color:var(--ink); outline:none; resize:none; max-height:120px; line-height:1.5; padding:4px 0; scrollbar-width:thin; }
     #question::placeholder { color:var(--stone); }
 
@@ -267,8 +364,10 @@
     .act-btn:hover { background:var(--cream-dk); color:var(--green); }
 
     .send-btn { width:44px; height:44px; background:linear-gradient(135deg,var(--green) 0%,var(--green-dark) 100%); color:white; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 3px 12px rgba(74,94,66,.35); transition:var(--ease); }
+    .send-btn.research-send { background:linear-gradient(135deg,#1a9dd9 0%,var(--research) 100%); box-shadow:0 3px 12px rgba(26,107,138,.35); }
     .send-btn svg { width:18px; height:18px; }
     .send-btn:hover { transform:scale(1.08) rotate(6deg); box-shadow:0 6px 18px rgba(74,94,66,.4); }
+    .send-btn.research-send:hover { box-shadow:0 6px 18px rgba(26,107,138,.4); }
     .send-btn:active { transform:scale(.95); }
     .send-btn:disabled { opacity:.35; pointer-events:none; }
 
@@ -305,6 +404,7 @@
       .hdr-btn span { display:none; }
       .chips-row { display:none; }
       .input-hint { display:none; }
+      .mode-badge { display:none !important; }
     }
     ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--stone);border-radius:5px;}
     @keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-5px);}40%,80%{transform:translateX(5px);}}
@@ -321,29 +421,23 @@
 <aside class="sidebar" id="sidebar">
 <div class="sidebar-inner">
 
-  <!-- Custom RetailBot Logo -->
+  <!-- Logo -->
   <div class="logo">
     <div class="logo-mark">
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Shopping bag silhouette -->
-        <path d="M14 24 Q12 24 11 26 L7 52 Q6 54 8 54 H56 Q58 54 57 52 L53 26 Q52 24 50 24 Z" fill="#2c3824" opacity=".9"/>
-        <!-- Bag handle arc -->
-        <path d="M22 24 C22 14 42 14 42 24" stroke="#2c3824" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-        <!-- Inner shimmer strip -->
+        <path d="M14 24 Q12 24 11 26 L7 52 Q6 54 8 54 H56 Q58 54 57 52 L53 26 Q52 24 50 24 Z" fill="var(--logo-primary)" opacity=".9"/>
+        <path d="M22 24 C22 14 42 14 42 24" stroke="var(--logo-primary)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
         <rect x="11" y="24" width="42" height="11" rx="3" fill="white" opacity=".07"/>
-        <!-- AI circuit nodes -->
-        <circle cx="24" cy="40" r="4" fill="#e8d49a"/>
-        <circle cx="40" cy="40" r="4" fill="#e8d49a"/>
-        <circle cx="32" cy="49" r="4" fill="#e8d49a"/>
-        <!-- Circuit lines -->
-        <line x1="24" y1="40" x2="40" y2="40" stroke="#e8d49a" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="24" y1="40" x2="32" y2="49" stroke="#e8d49a" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="40" y1="40" x2="32" y2="49" stroke="#e8d49a" stroke-width="1.8" stroke-linecap="round"/>
-        <!-- Central hub dot -->
-        <circle cx="32" cy="32" r="3" fill="#e8d49a" opacity=".55"/>
-        <line x1="32" y1="35" x2="32" y2="36" stroke="#e8d49a" stroke-width="1.5" opacity=".45"/>
-        <line x1="27" y1="32" x2="29" y2="32" stroke="#e8d49a" stroke-width="1.5" opacity=".4"/>
-        <line x1="35" y1="32" x2="37" y2="32" stroke="#e8d49a" stroke-width="1.5" opacity=".4"/>
+        <circle cx="24" cy="40" r="4" fill="var(--logo-accent)"/>
+        <circle cx="40" cy="40" r="4" fill="var(--logo-accent)"/>
+        <circle cx="32" cy="49" r="4" fill="var(--logo-accent)"/>
+        <line x1="24" y1="40" x2="40" y2="40" stroke="var(--logo-accent)" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="24" y1="40" x2="32" y2="49" stroke="var(--logo-accent)" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="40" y1="40" x2="32" y2="49" stroke="var(--logo-accent)" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="32" cy="32" r="3" fill="var(--logo-accent)" opacity=".55"/>
+        <line x1="32" y1="35" x2="32" y2="36" stroke="var(--logo-accent)" stroke-width="1.5" opacity=".45"/>
+        <line x1="27" y1="32" x2="29" y2="32" stroke="var(--logo-accent)" stroke-width="1.5" opacity=".4"/>
+        <line x1="35" y1="32" x2="37" y2="32" stroke="var(--logo-accent)" stroke-width="1.5" opacity=".4"/>
       </svg>
     </div>
     <div class="logo-text">
@@ -352,86 +446,119 @@
     </div>
   </div>
 
-  <!-- Upload -->
-  <div class="sec-label">
-    <div class="si"><i class="fas fa-cloud-upload-alt"></i></div>
-    Upload Document
+  <!-- ── MODE TABS ── -->
+  <div class="mode-tabs">
+    <button class="mode-tab active-rag" id="tabRag" onclick="switchMode('rag')">
+      <i class="fas fa-file-alt"></i> Doc Q&amp;A
+    </button>
+    <button class="mode-tab" id="tabResearch" onclick="switchMode('research')">
+      <i class="fas fa-search"></i> Research
+    </button>
   </div>
-  <div class="upload-card">
-    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-      <div class="dz-ring">
-        <!-- PDF + cloud up icon composite -->
-        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 10a4 4 0 0 1 4-4h18l10 10v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V10z" stroke="#e8d49a" stroke-width="2.5" fill="rgba(232,212,154,.08)"/>
-          <path d="M30 6v10h10" stroke="#e8d49a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M24 40V27m0 0-5 5m5-5 5 5" stroke="#e8d49a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <p>Click or drag &amp; drop your PDF</p>
-      <small>Retail documents only &bull; Max 10 MB</small>
-    </div>
-    <input type="file" id="fileInput" accept=".pdf" />
 
-    <div class="file-preview" id="filePreview">
-      <div class="fp-ico">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#2c3824" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Upload Section (RAG mode only) -->
+  <div id="uploadSection">
+    <div class="sec-label">
+      <div class="si"><i class="fas fa-cloud-upload-alt"></i></div>
+      Upload Document
+    </div>
+    <div class="upload-card">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-ring">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 10a4 4 0 0 1 4-4h18l10 10v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V10z" stroke="#e8d49a" stroke-width="2.5" fill="rgba(232,212,154,.08)"/>
+            <path d="M30 6v10h10" stroke="#e8d49a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M24 40V27m0 0-5 5m5-5 5 5" stroke="#e8d49a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p>Click or drag &amp; drop your PDF</p>
+        <small>Retail documents only &bull; Max 10 MB</small>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf" />
+      <div class="file-preview" id="filePreview">
+        <div class="fp-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2c3824" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="fp-name" id="fpName">document.pdf</div>
+          <div class="fp-size" id="fpSize">0 KB</div>
+        </div>
+        <button class="fp-rm" id="fpRm" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <button class="btn-upload" id="uploadBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        </svg>
+        Upload Document
+      </button>
+      <div class="upload-progress" id="uploadProgress"><div class="uprog-bar" id="uProgBar"></div></div>
+      <div class="ustat" id="uStat"></div>
+    </div>
+
+    <!-- Active Document -->
+    <div class="sec-label">
+      <div class="si"><i class="fas fa-folder-open"></i></div>
+      Active Document
+    </div>
+    <div class="doc-card">
+      <div class="doc-item" id="docItem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
         </svg>
+        <span class="doc-name">No document uploaded</span>
       </div>
-      <div style="flex:1;min-width:0">
-        <div class="fp-name" id="fpName">document.pdf</div>
-        <div class="fp-size" id="fpSize">0 KB</div>
+      <div class="conf-panel" id="confPanel">
+        <div class="conf-lbl">
+          <i class="fas fa-chart-bar" style="color:var(--gold);font-size:.7rem;"></i>
+          Retail Confidence: <strong id="confVal">—</strong>
+        </div>
+        <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
+        <div class="cat-tags" id="catTags"></div>
       </div>
-      <button class="fp-rm" id="fpRm" title="Remove">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
     </div>
+  </div><!-- /uploadSection -->
 
-    <button class="btn-upload" id="uploadBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-        <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-      </svg>
-      Upload Document
-    </button>
-
-    <div class="upload-progress" id="uploadProgress"><div class="uprog-bar" id="uProgBar"></div></div>
-    <div class="ustat" id="uStat"></div>
-  </div>
-
-  <!-- Active Document -->
-  <div class="sec-label">
-    <div class="si"><i class="fas fa-folder-open"></i></div>
-    Active Document
-  </div>
-  <div class="doc-card">
-    <div class="doc-item" id="docItem">
-      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-      </svg>
-      <span class="doc-name">No document uploaded</span>
+  <!-- Research Info Panel (Research mode only) -->
+  <div class="research-panel" id="researchPanel">
+    <div class="rp-title"><i class="fas fa-globe"></i> Autonomous Research</div>
+    <div class="rp-desc">
+      Ask any retail question — the agent will search the web via DuckDuckGo, synthesize findings using Groq AI, and produce a structured report saved to the knowledge repository.
     </div>
-    <div class="conf-panel" id="confPanel">
-      <div class="conf-lbl">
-        <i class="fas fa-chart-bar" style="color:var(--gold);font-size:.7rem;"></i>
-        Retail Confidence: <strong id="confVal">—</strong>
-      </div>
-      <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0%"></div></div>
-      <div class="cat-tags" id="catTags"></div>
+    <div class="rp-tags">
+      <span class="rp-tag">🌐 DuckDuckGo</span>
+      <span class="rp-tag">⚡ Groq LLM</span>
+      <span class="rp-tag">💾 Auto-saved</span>
     </div>
   </div>
 
-  <!-- Footer / model -->
+  <!-- Research History Panel -->
+  <div class="research-history-panel" id="researchHistoryPanel">
+    <div class="sec-label">
+      <div class="si"><i class="fas fa-history"></i></div>
+      Research History
+    </div>
+    <div class="rh-list" id="rhList">
+      <!-- Items loaded via JS -->
+      <div style="text-align:center;color:rgba(255,255,255,.4);font-size:.75rem;margin-top:10px;">Loading history...</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
   <div class="sf">
-    <div class="sf-model">
+    <div class="sf-model" id="sfModel">
       <div class="sf-model-ico">
         <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
         </svg>
       </div>
-      <div class="sf-model-txt">
-        <strong>Gemini 2.5 Flash</strong>
-        RAG + FAISS Pipeline
+      <div class="sf-model-txt" id="sfModelTxt">
+        <strong id="sfModelName">Gemini 2.5 Flash</strong>
+        <span id="sfModelSub">RAG + FAISS Pipeline</span>
       </div>
       <div class="sf-dot"></div>
     </div>
@@ -451,8 +578,7 @@
         </svg>
       </button>
       <div class="hdr-brand">
-        <div class="hdr-brand-mark">
-          <!-- Mini logo mark for header -->
+        <div class="hdr-brand-mark" id="hdrMark">
           <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M14 24 Q12 24 11 26 L7 52 Q6 54 8 54 H56 Q58 54 57 52 L53 26 Q52 24 50 24 Z" fill="rgba(255,255,255,.15)"/>
             <path d="M22 24 C22 14 42 14 42 24" stroke="white" stroke-width="5" stroke-linecap="round" fill="none"/>
@@ -465,13 +591,13 @@
           </svg>
         </div>
         <div class="hdr-brand-text">
-          <h2>RetailBot Q&amp;A</h2>
-          <p>Ask anything about your retail documents</p>
+          <h2 id="hdrTitle">RetailBot Q&amp;A</h2>
+          <p id="hdrSubtitle">Ask anything about your retail documents</p>
         </div>
       </div>
+      <span class="mode-badge rag-badge" id="modeBadge"><i class="fas fa-file-alt"></i> Doc Q&amp;A</span>
     </div>
     <div class="hdr-right">
-
       <button class="hdr-btn" onclick="clearChat()" title="Clear conversation">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
         <span>Clear</span>
@@ -481,9 +607,9 @@
 
   <!-- Messages -->
   <div class="chat-messages" id="chatBox">
-    <div class="welcome-state" id="welcomeState">
+    <!-- RAG Welcome -->
+    <div class="welcome-state" id="welcomeRag">
       <div class="ws-logo">
-        <!-- Full logo in welcome -->
         <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 22 Q10 22 9 25 L5 54 Q4 56 7 56 H57 Q60 56 59 54 L55 25 Q54 22 52 22 Z" fill="rgba(255,255,255,.15)"/>
           <path d="M21 22 C21 12 43 12 43 22" stroke="white" stroke-width="5.5" stroke-linecap="round" fill="none"/>
@@ -517,38 +643,88 @@
         </div>
       </div>
     </div>
+
+    <!-- Research Welcome -->
+    <div class="welcome-state" id="welcomeResearch" style="display:none;">
+      <div class="ws-logo" style="background:linear-gradient(135deg,var(--research),#1a9dd9);">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+          <circle cx="28" cy="28" r="16" stroke="white" stroke-width="5" fill="none"/>
+          <line x1="39" y1="39" x2="56" y2="56" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="28" cy="28" r="7" fill="rgba(255,255,255,.25)"/>
+          <line x1="28" y1="21" x2="28" y2="35" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+          <line x1="21" y1="28" x2="35" y2="28" stroke="white" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+        </svg>
+      </div>
+      <h3>Autonomous Retail Research</h3>
+      <p>Ask about trends, news, market data, or competitor insights. The AI agent searches the web and delivers a structured research report.</p>
+      <div class="ws-grid">
+        <div class="ws-card research-card" onclick="suggestQ('Latest trends in retail AI and automation 2025')">
+          <div class="ws-card-ico research-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--research)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="ws-card-text"><strong>AI Trends</strong><span>Retail automation</span></div>
+        </div>
+        <div class="ws-card research-card" onclick="suggestQ('Top retail ecommerce market growth statistics 2025')">
+          <div class="ws-card-ico research-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--research)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="ws-card-text"><strong>Market Data</strong><span>Growth stats</span></div>
+        </div>
+        <div class="ws-card research-card" onclick="suggestQ('Amazon Walmart retail strategy comparison 2025')">
+          <div class="ws-card-ico research-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--research)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg></div>
+          <div class="ws-card-text"><strong>Competitors</strong><span>Strategy analysis</span></div>
+        </div>
+        <div class="ws-card research-card" onclick="suggestQ('Sustainable retail practices consumer trends')">
+          <div class="ws-card-ico research-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--research)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg></div>
+          <div class="ws-card-text"><strong>Sustainability</strong><span>Consumer trends</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Input -->
   <div class="chat-input-wrap">
-    <div class="chips-row">
-      <div class="q-chip" onclick="suggestQ('What are the main store policies?')">
+    <div class="chips-row" id="chipsRow">
+      <!-- RAG chips (default) -->
+      <div class="q-chip" id="chipRag1" onclick="suggestQ('What are the main store policies?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Store policies
       </div>
-      <div class="q-chip" onclick="suggestQ('What are employee rules and guidelines?')">
+      <div class="q-chip" id="chipRag2" onclick="suggestQ('What are employee rules and guidelines?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Employees
       </div>
-      <div class="q-chip" onclick="suggestQ('What promotions and discounts are available?')">
+      <div class="q-chip" id="chipRag3" onclick="suggestQ('What promotions and discounts are available?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         Promotions
       </div>
-      <div class="q-chip" onclick="suggestQ('How is the POS and checkout process handled?')">
+      <div class="q-chip" id="chipRag4" onclick="suggestQ('How is the POS and checkout process handled?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         POS &amp; Checkout
       </div>
-      <div class="q-chip" onclick="suggestQ('What are the vendor and supplier terms?')">
+      <div class="q-chip" id="chipRag5" onclick="suggestQ('What are the vendor and supplier terms?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
         Vendors
       </div>
-      <div class="q-chip" onclick="suggestQ('What are the customer service standards?')">
+      <div class="q-chip" id="chipRag6" onclick="suggestQ('What are the customer service standards?')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Customer Service
       </div>
+      <!-- Research chips (hidden by default) -->
+      <div class="q-chip research-chip" id="chipRes1" style="display:none" onclick="suggestQ('Latest retail AI trends and innovations 2025')">
+        <i class="fas fa-brain"></i> AI Trends
+      </div>
+      <div class="q-chip research-chip" id="chipRes2" style="display:none" onclick="suggestQ('Global ecommerce market size and forecast 2025')">
+        <i class="fas fa-chart-line"></i> Market Size
+      </div>
+      <div class="q-chip research-chip" id="chipRes3" style="display:none" onclick="suggestQ('Retail supply chain disruption news 2025')">
+        <i class="fas fa-truck"></i> Supply Chain
+      </div>
+      <div class="q-chip research-chip" id="chipRes4" style="display:none" onclick="suggestQ('Customer experience personalization retail strategies')">
+        <i class="fas fa-user-circle"></i> CX Strategy
+      </div>
+      <div class="q-chip research-chip" id="chipRes5" style="display:none" onclick="suggestQ('Omnichannel retail best practices examples')">
+        <i class="fas fa-store"></i> Omnichannel
+      </div>
     </div>
 
-    <div class="input-row">
+    <div class="input-row" id="inputRow">
       <textarea id="question" rows="1" placeholder="Ask about your retail document…" oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
       <div class="input-actions">
         <button class="act-btn" title="Upload a PDF first from the sidebar" onclick="showToast('Upload a retail PDF from the sidebar panel first!','info')">
@@ -572,36 +748,146 @@
 </div>
 
 <script>
+  /* ─────── STATE ─────── */
   let selFile=null, upFile='', isUp=false, isSend=false, started=false;
+  let currentMode = 'rag';  // 'rag' | 'research'
 
-  const sidebar    = document.getElementById('sidebar');
-  const overlay    = document.getElementById('overlay');
-  const dropZone   = document.getElementById('dropZone');
-  const fileInput  = document.getElementById('fileInput');
-  const filePreview= document.getElementById('filePreview');
-  const fpName     = document.getElementById('fpName');
-  const fpSize     = document.getElementById('fpSize');
-  const fpRm       = document.getElementById('fpRm');
-  const uploadBtn  = document.getElementById('uploadBtn');
-  const uploadProg = document.getElementById('uploadProgress');
-  const uProgBar   = document.getElementById('uProgBar');
-  const uStat      = document.getElementById('uStat');
-  const docItem    = document.getElementById('docItem');
-  const confPanel  = document.getElementById('confPanel');
-  const confFill   = document.getElementById('confFill');
-  const confVal    = document.getElementById('confVal');
-  const catTags    = document.getElementById('catTags');
-  const chatBox    = document.getElementById('chatBox');
-  const questionEl = document.getElementById('question');
-  const sendBtn    = document.getElementById('sendBtn');
-  const welcomeEl  = document.getElementById('welcomeState');
-  const toastCon   = document.getElementById('toastCon');
+  /* ─────── DOM REFS ─────── */
+  const sidebar      = document.getElementById('sidebar');
+  const overlay      = document.getElementById('overlay');
+  const dropZone     = document.getElementById('dropZone');
+  const fileInput    = document.getElementById('fileInput');
+  const filePreview  = document.getElementById('filePreview');
+  const fpName       = document.getElementById('fpName');
+  const fpSize       = document.getElementById('fpSize');
+  const fpRm         = document.getElementById('fpRm');
+  const uploadBtn    = document.getElementById('uploadBtn');
+  const uploadProg   = document.getElementById('uploadProgress');
+  const uProgBar     = document.getElementById('uProgBar');
+  const uStat        = document.getElementById('uStat');
+  const docItem      = document.getElementById('docItem');
+  const confPanel    = document.getElementById('confPanel');
+  const confFill     = document.getElementById('confFill');
+  const confVal      = document.getElementById('confVal');
+  const catTags      = document.getElementById('catTags');
+  const chatBox      = document.getElementById('chatBox');
+  const questionEl   = document.getElementById('question');
+  const sendBtn      = document.getElementById('sendBtn');
+  const welcomeRag   = document.getElementById('welcomeRag');
+  const welcomeRes   = document.getElementById('welcomeResearch');
+  const toastCon     = document.getElementById('toastCon');
+  const uploadSection= document.getElementById('uploadSection');
+  const researchPanel= document.getElementById('researchPanel');
+  const researchHistoryPanel= document.getElementById('researchHistoryPanel');
+  const rhList       = document.getElementById('rhList');
+  const tabRag       = document.getElementById('tabRag');
+  const tabResearch  = document.getElementById('tabResearch');
 
+  // Configure marked for Mermaid
+  const renderer = new marked.Renderer();
+  const originalCodeRenderer = renderer.code.bind(renderer);
+  renderer.code = function({text, lang, escaped}) {
+    if (lang === 'mermaid') {
+      return '<div class="mermaid">' + text + '</div>';
+    }
+    return originalCodeRenderer({text, lang, escaped});
+  };
+  marked.setOptions({ renderer });
+  const modeBadge    = document.getElementById('modeBadge');
+  const hdrMark      = document.getElementById('hdrMark');
+  const hdrTitle     = document.getElementById('hdrTitle');
+  const hdrSubtitle  = document.getElementById('hdrSubtitle');
+  const inputRow     = document.getElementById('inputRow');
+  const sfModelName  = document.getElementById('sfModelName');
+  const sfModelSub   = document.getElementById('sfModelSub');
+  const sendBtnEl    = document.getElementById('sendBtn');
+
+  // RAG chips
+  const ragChips = ['chipRag1','chipRag2','chipRag3','chipRag4','chipRag5','chipRag6'].map(id=>document.getElementById(id));
+  // Research chips
+  const resChips = ['chipRes1','chipRes2','chipRes3','chipRes4','chipRes5'].map(id=>document.getElementById(id));
+
+  /* ─────── SIDEBAR ─────── */
   function toggleSidebar(){ sidebar.classList.toggle('open'); overlay.classList.toggle('active'); }
   function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
   document.addEventListener('keydown', e => { if(e.key==='Escape') closeSidebar(); });
 
-  /* FILE */
+  /* ─────── MODE SWITCH ─────── */
+  function switchMode(mode) {
+    if(currentMode === mode) return;
+    currentMode = mode;
+
+    if(mode === 'rag') {
+      // Tab styles
+      tabRag.className = 'mode-tab active-rag';
+      tabResearch.className = 'mode-tab';
+      // Sidebar panels
+      uploadSection.style.display = '';
+      researchPanel.classList.remove('visible');
+      // Header and Sidebar mode
+      hdrMark.classList.remove('research-mode');
+      sidebar.classList.remove('research-mode');
+      hdrTitle.textContent = 'RetailBot Q\u00A0A';
+      hdrTitle.innerHTML = 'RetailBot Q&amp;A';
+      hdrSubtitle.textContent = 'Ask anything about your retail documents';
+      modeBadge.className = 'mode-badge rag-badge';
+      modeBadge.innerHTML = '<i class="fas fa-file-alt"></i> Doc Q&A';
+      // Input
+      inputRow.classList.remove('research-input');
+      sendBtnEl.classList.remove('research-send');
+      questionEl.placeholder = 'Ask about your retail document…';
+      // Chips
+      ragChips.forEach(c => c.style.display = '');
+      resChips.forEach(c => c.style.display = 'none');
+      // Sidebar footer
+      sfModelName.textContent = 'Gemini 2.5 Flash';
+      sfModelSub.textContent = 'RAG + FAISS Pipeline';
+      // Welcome screens
+      welcomeRag.style.display = started ? 'none' : '';
+      welcomeRes.style.display = 'none';
+      // System message
+      addMsg('bot', '📄 **Document Q&A mode** — Upload a retail PDF and ask me anything about its contents.', [], false);
+    } else {
+      // Tab styles
+      tabRag.className = 'mode-tab';
+      tabResearch.className = 'mode-tab active-research';
+      // Sidebar panels
+      uploadSection.style.display = 'none';
+      researchPanel.classList.add('visible');
+      researchHistoryPanel.classList.add('visible');
+      loadResearchHistory();
+      // Header and Sidebar mode
+      hdrMark.classList.add('research-mode');
+      sidebar.classList.add('research-mode');
+      hdrTitle.innerHTML = 'Autonomous Research';
+      hdrSubtitle.textContent = 'Web search + Groq AI synthesis';
+      modeBadge.className = 'mode-badge research-badge';
+      modeBadge.innerHTML = '<i class="fas fa-search"></i> Research';
+      // Input
+      inputRow.classList.add('research-input');
+      sendBtnEl.classList.add('research-send');
+      questionEl.placeholder = 'Ask about retail trends, competitors, market data…';
+      // Chips
+      ragChips.forEach(c => c.style.display = 'none');
+      resChips.forEach(c => c.style.display = '');
+      // Sidebar footer
+      sfModelName.textContent = 'Groq LLM';
+      sfModelSub.textContent = 'DuckDuckGo + Synthesis';
+      // Welcome screens
+      if(!started) {
+        welcomeRag.style.display = 'none';
+        welcomeRes.style.display = '';
+      } else {
+        welcomeRes.style.display = 'none';
+      }
+      // System message
+      addMsg('bot', '🔍 **Research mode activated** — Ask me about retail trends, market news, competitor strategies, or any retail-related topic. I\'ll search the web and synthesize a structured report.', [], false);
+    }
+    started = true;
+    questionEl.focus();
+  }
+
+  /* ─────── FILE ─────── */
   fileInput.addEventListener('change', e => pickFile(e.target.files[0]));
   fpRm.addEventListener('click', e => { e.stopPropagation(); clearFile(); });
   ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); }));
@@ -618,7 +904,7 @@
   }
   function clearFile(){ selFile=null; fileInput.value=''; filePreview.classList.remove('visible'); hideUstat(); dropZone.style.borderColor=''; }
 
-  /* UPLOAD */
+  /* ─────── UPLOAD ─────── */
   uploadBtn.addEventListener('click', doUpload);
   async function doUpload(){
     if(!selFile){ uploadBtn.style.animation='shake .4s'; setTimeout(()=>uploadBtn.style.animation='',400); showToast('Select a PDF first','error'); return; }
@@ -676,8 +962,14 @@
   function setUstat(type,html){ uStat.className='ustat '+type; uStat.innerHTML=html; }
   function hideUstat(){ uStat.className='ustat'; uStat.innerHTML=''; }
 
-  /* CHAT */
-  function hideWelcome(){ if(!started){ welcomeEl.style.display='none'; started=true; } }
+  /* ─────── CHAT ─────── */
+  function hideWelcome(){
+    if(!started){
+      welcomeRag.style.display='none';
+      welcomeRes.style.display='none';
+      started=true;
+    }
+  }
   function suggestQ(text){ questionEl.value=text; autoResize(questionEl); questionEl.focus(); }
 
   const nowStr = ()=> new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
@@ -691,48 +983,229 @@
     <line x1="24" y1="40" x2="32" y2="49" stroke="#4a5e42" stroke-width="2.2"/>
     <line x1="40" y1="40" x2="32" y2="49" stroke="#4a5e42" stroke-width="2.2"/>
   </svg>`;
+  const RESEARCH_AV = `<svg viewBox="0 0 24 24" fill="none" stroke="var(--research)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
 
-  function addMsg(sender, text, sources=[]){
+  /**
+   * addMsg — universal message renderer
+   * @param {string} sender 'user'|'bot'|'research'
+   * @param {string} text Markdown content
+   * @param {Array} sources Page numbers (RAG) or {title,url} objects (research)
+   * @param {boolean} isResearchResult Whether to render research footer
+   * @param {Object|null} researchMeta {saved_to, model_used}
+   */
+  function addMsg(sender, text, sources=[], isResearchResult=false, researchMeta=null){
     hideWelcome();
-    const w=document.createElement('div'); w.className=`message ${sender}`;
-    const srcHtml=sources.length?`<div class="msg-sources">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-      Pages: ${sources.map(p=>`<span class="src-pill">p.${p+1}</span>`).join('')}</div>`:'';
-    w.innerHTML=`<div class="msg-av">${sender==='user'?USER_AV:BOT_AV}</div>
+    const w = document.createElement('div');
+    let msgClass = sender === 'user' ? 'user' : (isResearchResult ? 'research' : 'bot');
+    if (sender === 'user' && currentMode === 'research') {
+      msgClass += ' research-user';
+    }
+    w.className = `message ${msgClass}`;
+
+    // Sources HTML for RAG mode (page numbers)
+    let srcHtml = '';
+    if(sources.length && !isResearchResult){
+      srcHtml = `<div class="msg-sources">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Pages: ${sources.map(p=>`<span class="src-pill">p.${p+1}</span>`).join('')}</div>`;
+    }
+
+    // Research footer
+    let researchFooter = '';
+    if(isResearchResult && researchMeta){
+      const fname = researchMeta.saved_to ? researchMeta.saved_to.split(/[\\/]/).pop() : 'report.md';
+      const model = researchMeta.model_used || 'Groq';
+      researchFooter = `<div class="research-footer">
+        <i class="fas fa-search"></i>
+        Research completed using <strong>${model}</strong> &bull;
+        Saved to <span title="${researchMeta.saved_to || ''}">${fname}</span>
+      </div>`;
+    }
+
+    const av = sender === 'user' ? USER_AV : (isResearchResult ? RESEARCH_AV : BOT_AV);
+
+    w.innerHTML = `<div class="msg-av">${av}</div>
       <div class="msg-body">
         <div class="msg-content">${marked.parse(text)}</div>
         ${srcHtml}
+        ${researchFooter}
         <div class="msg-time">${nowStr()}</div>
       </div>`;
-    chatBox.appendChild(w); scrollDown();
+    chatBox.appendChild(w);
+    
+    // Render mermaid diagrams if any
+    if (w.querySelector('.mermaid')) {
+      try {
+        mermaid.init(undefined, w.querySelectorAll('.mermaid'));
+      } catch (e) {
+        console.error('Mermaid render error:', e);
+      }
+    }
+    
+    scrollDown();
   }
 
-  function addTyping(){
-    const d=document.createElement('div'); d.className='message bot'; d.id='typing';
-    d.innerHTML=`<div class="msg-av">${BOT_AV}</div><div class="msg-body"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  function addTyping(isResearch=false){
+    const d=document.createElement('div');
+    d.className='message bot'; d.id='typing';
+    const spanClass = isResearch ? 'typing-indicator research-typing' : 'typing-indicator';
+    const av = isResearch ? RESEARCH_AV : BOT_AV;
+    d.innerHTML=`<div class="msg-av">${av}</div><div class="msg-body"><div class="${spanClass}"><span></span><span></span><span></span></div></div>`;
     chatBox.appendChild(d); scrollDown();
   }
   function removeTyping(){ const el=document.getElementById('typing'); if(el) el.remove(); }
   function scrollDown(){ requestAnimationFrame(()=>chatBox.scrollTop=chatBox.scrollHeight); }
 
+  /* ─────── SEND (unified) ─────── */
   async function sendQ(){
-    const q=questionEl.value.trim(); if(!q||isSend) return;
-    if(!upFile){ hideWelcome(); addMsg('bot','⚠️ **Please upload a retail document first** — use the sidebar to upload a PDF.'); return; }
-    isSend=true; addMsg('user',q); questionEl.value=''; questionEl.style.height=''; sendBtn.disabled=true; addTyping();
+    const q = questionEl.value.trim();
+    if(!q || isSend) return;
+
+    if(currentMode === 'rag'){
+      await sendRagQuery(q);
+    } else {
+      await sendResearchQuery(q);
+    }
+  }
+
+  async function sendRagQuery(q){
+    if(!upFile){
+      hideWelcome();
+      addMsg('bot','⚠️ **Please upload a retail document first** — use the sidebar to upload a PDF.');
+      return;
+    }
+    isSend=true;
+    addMsg('user',q);
+    questionEl.value=''; questionEl.style.height='';
+    sendBtn.disabled=true;
+    addTyping(false);
     const fd=new FormData(); fd.append('query',q);
     try{
-      const res=await fetch('/chat',{method:'POST',body:fd}); const data=await res.json();
+      const res=await fetch('/chat',{method:'POST',body:fd});
+      const data=await res.json();
       removeTyping();
       if(res.ok) addMsg('bot',data.answer,data.sources||[]);
       else        addMsg('bot','❌ **Error:** '+(data.detail||'Unknown error'));
     } catch(err){ removeTyping(); addMsg('bot','❌ **Network error:** '+err.message); }
     finally{ isSend=false; sendBtn.disabled=false; questionEl.focus(); }
   }
+
+  async function sendResearchQuery(q){
+    isSend=true;
+    addMsg('user',q);
+    questionEl.value=''; questionEl.style.height='';
+    sendBtn.disabled=true;
+    addTyping(true);
+    showToast('🔍 Searching the web…','info');
+
+    try{
+      const res = await fetch('/api/research', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({query: q})
+      });
+      const data = await res.json();
+      removeTyping();
+      if(res.ok){
+        addMsg(
+          'research',
+          data.summary || '*(No summary returned)*',
+          [],
+          true,
+          { saved_to: data.saved_to, model_used: data.model_used }
+        );
+        showToast('Research report ready!','success');
+      } else {
+        addMsg('bot','❌ **Research Error:** '+(data.detail||'Unknown error'));
+        showToast('Research failed','error');
+      }
+    } catch(err){
+      removeTyping();
+      addMsg('bot','❌ **Network error:** '+err.message);
+      showToast('Network error','error');
+    } finally {
+      isSend=false; sendBtn.disabled=false; questionEl.focus();
+    }
+  }
+
   function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendQ(); } }
-  function clearChat(){ chatBox.innerHTML=''; started=false; chatBox.appendChild(welcomeEl); welcomeEl.style.display=''; showToast('Conversation cleared','info'); }
+
+  /* ─────── RESEARCH HISTORY ─────── */
+  async function loadResearchHistory() {
+    try {
+      const res = await fetch('/api/research/history');
+      const data = await res.json();
+      rhList.innerHTML = '';
+      if (!data.history || data.history.length === 0) {
+        rhList.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,.4);font-size:.75rem;margin-top:10px;">No previous research</div>';
+        return;
+      }
+      
+      data.history.forEach(item => {
+        const d = new Date(item.timestamp * 1000);
+        const div = document.createElement('div');
+        div.className = 'rh-item';
+        // Cleanup filename for display
+        let displayTitle = item.filename.replace('.md', '').replace(/^\\d+_\\d+_/, '').replace(/_/g, ' ');
+        if (!displayTitle) displayTitle = item.filename;
+        
+        div.innerHTML = `
+          <div class="rh-item-title" title="${item.filename}">${displayTitle}</div>
+          <div class="rh-item-meta">
+            <span>${d.toLocaleDateString()} ${d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+            <span>${(item.size/1024).toFixed(1)} KB</span>
+          </div>
+        `;
+        div.onclick = () => loadHistoryReport(item.filename, displayTitle);
+        rhList.appendChild(div);
+      });
+    } catch(err) {
+      console.error(err);
+      rhList.innerHTML = '<div style="text-align:center;color:#f5a5a5;font-size:.75rem;margin-top:10px;">Failed to load history</div>';
+    }
+  }
+
+  async function loadHistoryReport(filename, title) {
+    if (currentMode !== 'research') switchMode('research');
+    
+    addTyping(true);
+    addMsg('user', `Load report: **${title}**`);
+    
+    try {
+      const res = await fetch(`/api/research/history/${filename}`);
+      const data = await res.json();
+      removeTyping();
+      if (res.ok) {
+        addMsg('research', data.content, [], true, { saved_to: data.filename, model_used: 'Groq (Historical)' });
+      } else {
+        addMsg('bot', '❌ **Failed to load report:** ' + (data.detail || 'Unknown error'));
+      }
+    } catch(err) {
+      removeTyping();
+      addMsg('bot', '❌ **Network error:** ' + err.message);
+    }
+  }
+
+  function clearChat(){
+    // Remove all message nodes (keep welcome states)
+    Array.from(chatBox.children).forEach(child => {
+      if(child.id !== 'welcomeRag' && child.id !== 'welcomeResearch') child.remove();
+    });
+    started=false;
+    // Show correct welcome
+    if(currentMode === 'rag'){
+      welcomeRag.style.display='';
+      welcomeRes.style.display='none';
+    } else {
+      welcomeRag.style.display='none';
+      welcomeRes.style.display='';
+    }
+    showToast('Conversation cleared','info');
+  }
+
   function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
 
-  /* TOAST */
+  /* ─────── TOAST ─────── */
   const TICONS={
     success:'<i class="fas fa-check-circle"></i>',
     error:'<i class="fas fa-times-circle"></i>',

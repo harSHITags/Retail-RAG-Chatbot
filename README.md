@@ -43,4 +43,35 @@ https://github.com/harSHITags/Retail-RAG-Chatbot/blob/main/RetailBot%20-HLD%20Do
    ```bash
    git clone https://github.com/harSHITags/Retail-RAG-Chatbot
    cd Retail-Chatbot
-   
+   ```
+
+### 2. Setup Environment Variables
+Create a `.env` file in the root directory and add:
+```
+GEMINI_API_KEY=your_google_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=mixtral-8x7b-32768
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run the Server
+```bash
+uvicorn app:app --reload
+```
+
+## 🤖 Autonomous Research Mode
+This application now features an **Autonomous Research Agent** powered by CrewAI and DuckDuckGo search.
+When a user asks a complex retail question, the research mode will:
+1. Search the live internet for up-to-date facts.
+2. Delegate tasks to a Senior Retail Analyst agent.
+3. Synthesize findings into a final report using a Strategy Consultant agent.
+4. Save the detailed report directly to the `knowledge_repository/research_findings/` folder for persistent storage.
+
+### Example Queries
+- "What are the latest self-checkout theft prevention strategies in 2024?"
+- "Compare the inventory management practices of Walmart vs Target."
+- "What are the top e-commerce fulfillment trends for retail this year?"

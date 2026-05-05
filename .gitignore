@@ -4,6 +4,9 @@ __pycache__/
 *$py.class
 *.so
 .Python
+
+# Virtual Environments
+.venv/
 venv/
 env/
 ENV/
@@ -20,6 +23,7 @@ venv.bak/
 # Project specific
 docs/
 faiss_index/
+knowledge_repository/
 *.pdf
 *.log
 
@@ -42,3 +46,8 @@ temp/
 # Vector stores
 *.faiss
 *.pkl
+
+# Cache / Models
+.cache/
+models/
+.huggingface/
