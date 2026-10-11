@@ -2,8 +2,6 @@
 
 A powerful **Retrieval-Augmented Generation (RAG)** system for retail document intelligence. Upload retail PDFs and ask questions – answers are grounded strictly in your documents with zero hallucination.
 
-![Demo](https://via.placeholder.com/800x400?text=Retail+RAG+Chatbot+Demo)
-
 ##  Features
 
 -  **PDF Upload** – Upload retail documents (policies, reports, manuals)
